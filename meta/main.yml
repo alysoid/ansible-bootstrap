@@ -1,7 +1,7 @@
 ---
 galaxy_info:
   author: Andrea Brandi
-  description: Install and set system locales in Ubuntu.
+  description: Bootstrap Ubuntu operating system for Catena environment management.
   license: MIT
   min_ansible_version: 1.9.2
   platforms:
