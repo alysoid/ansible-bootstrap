@@ -1,31 +1,38 @@
 ---
-- name: Install language pack
-  apt: name=language-pack-{{ item[0:2] }} state=present
-  with_items:
-  - "{{ locale_lang }}"
+- include_vars: "{{ item }}"
+  with_first_found:
+    - "{{ ansible_os_family | lower }}.yml"
+    - "default.yml"
 
-- name: Create locale
-  locale_gen: name={{ locale_lang }} state=present
+- name: Install language pack
+  package:
+    name: language-pack-{{ item[0:2] }}
+    state: present
+  with_items:
+    - "{{ locale_lang }}"
+  when: ansible_distribution == 'Ubuntu'
+
+- name: Generate locale
+  locale_gen:
+    name: "{{ locale_lang }}"
+    state: present
 
 - name: Set locale
   template:
     src: default.j2
-    dest: /etc/default/locale
+    dest: "{{ locale_file }}"
 
-- name: Validate timezone variable
-  stat: path=/usr/share/zoneinfo/{{ default_timezone }}
+- name: Checking timezone variable
+  stat:
+    path: "/usr/share/zoneinfo/{{ timezone }}"
   register: timezone_path
   changed_when: false
 
-- name: Explain timezone error
-  fail: msg="{{ default_timezone }} is not valid. For a list of valid timezones, check https://php.net/manual/en/timezones.php"
+- name: Validate timezone variable
+  fail:
+    msg: "{{ timezone }} is not valid. For valid timezones, check https://en.wikipedia.org/wiki/List_of_tz_database_time_zones"
   when: not timezone_path.stat.exists
 
-- name: Get current timezone
-  command: cat /etc/timezone
-  register: current_timezone
-  changed_when: false
-
 - name: Set timezone
-  command: timedatectl set-timezone {{ default_timezone }}
-  when: current_timezone.stdout != default_timezone
+  command: timedatectl set-timezone {{ timezone }}
+  when: current_timezone.stdout != timezone

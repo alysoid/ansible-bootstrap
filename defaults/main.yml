@@ -1,2 +1,2 @@
 locale_lang: en_US.UTF-8
-default_timezone: Etc/UTC
+timezone: Etc/UTC
