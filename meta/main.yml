@@ -5,6 +5,12 @@ galaxy_info:
   license: MIT
   min_ansible_version: 1.9.2
   platforms:
+  - name: ArchLinux
+  - name: Debian
+    versions:
+    - jessie
+    - stretch
+    - buster
   - name: Ubuntu
     versions:
     - all
