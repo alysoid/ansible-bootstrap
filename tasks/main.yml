@@ -22,7 +22,7 @@
     src: default.j2
     dest: "{{ locale_file }}"
 
-- name: Check current timezone
+- name: Check timezone
   command: "timedatectl show"
   register: timedatectl_current
   changed_when: false
@@ -30,3 +30,12 @@
 - name: Set timezone
   command: timedatectl set-timezone {{ timezone }}
   changed_when: timezone not in timedatectl_current.stdout
+
+- name: Check keyboard layout
+  command: localectl status
+  register: localectl_current
+  changed_when: false
+
+- name: Set keyboard layout
+  command: localectl set-keymap --no-convert {{ keymap }}
+  when: "('VC Keymap: ' + keymap) not in localectl_current.stdout"
