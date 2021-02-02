@@ -1,9 +1,4 @@
 ---
-- include_vars: "{{ item }}"
-  with_first_found:
-    - "{{ ansible_os_family | lower }}.yml"
-    - "default.yml"
-
 - name: Install 'language-pack-{{ locale[0:2] }}'
   package:
     name: language-pack-{{ item[0:2] }}
