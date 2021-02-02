@@ -4,23 +4,37 @@
     - "{{ ansible_os_family | lower }}.yml"
     - "default.yml"
 
-- name: Install language pack
+- name: Install 'language-pack-{{ locale[0:2] }}'
   package:
     name: language-pack-{{ item[0:2] }}
     state: present
   with_items:
-    - "{{ locale_lang }}"
+    - "{{ locale }}"
   when: ansible_distribution == 'Ubuntu'
 
-- name: Generate locale
+- name: Generate locale for '{{ locale }}'
   locale_gen:
-    name: "{{ locale_lang }}"
+    name: "{{ locale }}"
     state: present
 
-- name: Set locale
-  template:
-    src: default.j2
-    dest: "{{ locale_file }}"
+- name: Check localectl status
+  command: localectl status
+  register: localectl_current
+  changed_when: false
+
+- name: Get current system settings
+  set_fact:
+    keymap_current: "{{ localectl_current.stdout | regex_search('Keymap: ([^\n]+)', '\\1') | first }}"
+    locale_current: "{{ localectl_current.stdout | regex_search('LANG=([^\n]+)', '\\1') | first }}"
+    language_current: "{{ localectl_current.stdout | regex_search('LANGUAGE=([^\n]+)', '\\1') | default([locale], true) | first }}"
+
+- name: Set locale to '{{ locale }}', language to '{{ language }}'
+  command: localectl set-locale LANG={{ locale }} LANGUAGE={{ language }}
+  when: locale_current != locale or language_current != language
+
+- name: Set keyboard layout
+  command: localectl set-keymap --no-convert {{ keymap }}
+  when: keymap_current != keymap
 
 - name: Check timezone
   command: "timedatectl show"
@@ -30,12 +44,3 @@
 - name: Set timezone
   command: timedatectl set-timezone {{ timezone }}
   changed_when: timezone not in timedatectl_current.stdout
-
-- name: Check keyboard layout
-  command: localectl status
-  register: localectl_current
-  changed_when: false
-
-- name: Set keyboard layout
-  command: localectl set-keymap --no-convert {{ keymap }}
-  when: "('VC Keymap: ' + keymap) not in localectl_current.stdout"
