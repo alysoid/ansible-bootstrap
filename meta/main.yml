@@ -1,7 +1,7 @@
 ---
 galaxy_info:
   author: Andrea Brandi
-  description: Bootstrap Ubuntu operating system for Catena environment management.
+  description: Bootstrap GNU+Linux systemd based OS.
   license: MIT
   min_ansible_version: 1.9.2
   platforms:
@@ -11,9 +11,20 @@ galaxy_info:
     - jessie
     - stretch
     - buster
+  - name: EL
+    versions:
+    - 7
+    - 8
+  - name: Fedora
+    versions:
+    - 30
+    - 31
+    - 32
   - name: Ubuntu
     versions:
-    - all
+    - xenial
+    - bionic
+    - focal
   categories:
   - system
 dependencies: []
